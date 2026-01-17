@@ -1,10 +1,7 @@
-document.addEventListener("DOMContentLoaded", () => { // is the page loaded?
-  const yearSpan = document.getElementById("current-year");
-  if (yearSpan) {
-    yearSpan.textContent = new Date().getFullYear();
-  }
-    const departments = [
-    {
+import type { Department } from "../types/Department";
+
+export const departments: Department[] = [
+   {
       name: "Administration",
       employees: [
         { firstName: "Zoë", lastName: "Robins" },
@@ -90,28 +87,4 @@ document.addEventListener("DOMContentLoaded", () => { // is the page loaded?
         { firstName: "Onatah", lastName: "Redhawk" } 
       ]
     }
-  ];
-
-  const main = document.getElementById("employee-directory"); //this is where we will put the content
-
-  departments.forEach((department) => {
-    const section = document.createElement("section"); // each department gets its own section
-
-    const heading = document.createElement("h2"); // department name as heading
-    heading.textContent = department.name;
-
-    const list = document.createElement("ul");
-
-    department.employees.forEach((employee) => {
-      const listItem = document.createElement("li");
-      listItem.textContent = employee.lastName
-        ? `${employee.firstName} ${employee.lastName}`
-        : employee.firstName;
-      list.appendChild(listItem);
-    });
-
-    section.appendChild(heading);
-    section.appendChild(list);
-    main.appendChild(section);
-  });
-});
+];
