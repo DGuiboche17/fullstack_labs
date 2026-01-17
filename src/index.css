@@ -1,0 +1,96 @@
+
+/* CSS Reset (helps with clean slate; no browser inconsistencies) */
+*, *:before, *:after {
+    box-sizing: border-box;
+}
+* {
+    margin: 0;
+    padding: 0;
+}
+html {
+    scroll-behavior: smooth;
+}
+img {
+    max-width: 100%;
+    display: block;
+}
+h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: #f7f7f7;
+  color: #222;
+  line-height: 1.6;
+  padding-bottom: 3rem;
+}
+
+/* Header */
+.site-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  background: #003366;
+  color: white;
+}
+
+.site-header .logo {
+  width: 150px;
+  height: auto;
+  background: white;
+  padding: 5px;
+}
+
+.site-header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Main layout */
+#employee-directory {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Department sections */
+#employee-directory section {
+  background: white;
+  padding: 1.2rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+#employee-directory h2 {
+  margin-bottom: 0.8rem;
+  color: #003366;
+  font-size: 1.3rem;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.3rem;
+}
+
+/* Employee list */
+#employee-directory ul {
+  list-style: none;
+  margin-top: 0.5rem;
+}
+
+#employee-directory li {
+  padding: 0.2rem 0;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: #003366;
+  color: white;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+}
