@@ -1,7 +1,7 @@
-import { departments } from "../../data/department"; 
+import type { Department } from "../../types/Department"; 
 
-interface Props { // means properties; how a parent component can pass data to a child component
-  department: typeof departments[number];
+interface Props {
+  department: Department;
 }
 export const DepartmentSection = ({ department }: Props) => {
   return (

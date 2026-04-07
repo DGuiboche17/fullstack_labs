@@ -1,46 +1,48 @@
-import { useState } from "react";
-import type { Department, Employee } from "../../types/Department";
+import type { Department } from "../../types/Department";
+import { useFormInput } from "../../hooks/useFormInput";
+import { addEmployee } from "../../services/employeeService";
 
 interface FormProps {
-  addEmployee: (employee: Employee, departmentName: string) => void;
+  onEmployeeAdded: (departments: Department[]) => void;
   departments: Department[];
 }   
-export const Form = ({ addEmployee, departments }: FormProps) => {
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [departmentName, setDepartmentName] = useState(departments[0]?.name || "");
-  const [errors, setErrors] = useState<string[]>( []);
+export const Form = ({ onEmployeeAdded, departments }: FormProps) => {
+  const firstName = useFormInput("");
+  const lastName = useFormInput("");
+  const departmentName = useFormInput(departments[0]?.name || "");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: string[] = [];
 
-    // validates first name
-    if (firstName.trim().length < 3) { // trim removes whitespace from both ends of a string; this is helpful if user accidentally adds spaces before or after their input
-      newErrors.push("First name must be at least 3 characters");
-    }
+    // validate each input using the hook's validate method
+    const firstNameValid = firstName.validate((val) =>
+      val.trim().length < 3 ? "First name must be at least 3 characters" : ""
+    );
+    const deptValid = departmentName.validate((val) =>
+      !val ? "Please select a department" : ""
+    );
 
-    // now we will see if a department is selected
-    if (!departmentName) {
-      newErrors.push("Please select a department");
-    }
-
-    // this is to check if there are any errors like first name less than 3 characters or no department selected
-    if (newErrors.length > 0) {
-      setErrors(newErrors);
+    if (!firstNameValid || !deptValid) {
       return;
     }
 
+    // delegate creation to the service; it validates and calls the repo
+    const result = addEmployee(firstName.value, lastName.value, departmentName.value);
+
+    if (!result.success) {
+      // service returned errors; show them on the first name field as a safety net
+      firstName.setMessage(result.errors.join(", "));
+      return;
+    }
 
     const audio = new Audio('/zelda.mp3'); // I just wanted to see if this would work lol
     audio.play();
 
-    // Clear errors and add employee
-    setErrors([]);
-    addEmployee({ firstName, lastName }, departmentName);
-    setFirstName("");
-    setLastName("");
-    setDepartmentName(departments[0]?.name || "");
+    // update the parent with the new departments from the repo
+    onEmployeeAdded(result.departments!);
+    firstName.reset("");
+    lastName.reset("");
+    departmentName.reset(departments[0]?.name || "");
   };
 
 
@@ -48,12 +50,11 @@ export const Form = ({ addEmployee, departments }: FormProps) => {
     <form id="add-employee-form" onSubmit={handleSubmit}>
       <h2>Add New Employee</h2>
       
-      {errors.length > 0 && ( // if there are errors, we show this block
+      {(firstName.message || departmentName.message) && (
         <div className="error-messages"> 
           <ul>
-            {errors.map((error, index) => (
-              <li key={index}>{error}</li>
-            ))}
+            {firstName.message && <li>{firstName.message}</li>}
+            {departmentName.message && <li>{departmentName.message}</li>}
           </ul>
         </div>
       )}
@@ -63,11 +64,11 @@ export const Form = ({ addEmployee, departments }: FormProps) => {
         <input  
           type="text"
           id="first-name"
-          value={firstName}   
-          onChange={(e) => { // e is the event object
-            const value = e.target.value; // is the current value of the input field
-            const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1); // this capitalizes the first letter of the value and then adds the rest of the string; slice starting at 1 because the first index is the uppercase we are changing
-            setFirstName(capitalizedValue); // now we take what we changed and set it to first name
+          value={firstName.value}   
+          onChange={(e) => {
+            const value = e.target.value;
+            const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
+            firstName.setValue(capitalizedValue);
           }}
           required
         />  
@@ -78,11 +79,11 @@ export const Form = ({ addEmployee, departments }: FormProps) => {
         <input
           type="text"
           id="last-name"
-          value={lastName}        
-          onChange={(e) => { // e is the event object
-            const value = e.target.value; // is the current value of the input field
-            const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1); // this capitalizes the first letter of the value and then adds the rest of the string; slice starting at 1 because the first index is the uppercase we are changing
-            setLastName(capitalizedValue); // now we take what we changed and set it to last name
+          value={lastName.value}        
+          onChange={(e) => {
+            const value = e.target.value;
+            const capitalizedValue = value.charAt(0).toUpperCase() + value.slice(1);
+            lastName.setValue(capitalizedValue);
           }}
         />
       </div>  
@@ -91,8 +92,8 @@ export const Form = ({ addEmployee, departments }: FormProps) => {
         <label htmlFor="department">Department:</label> 
         <select
           id="department"
-          value={departmentName}
-          onChange={(e) => setDepartmentName(e.target.value)} 
+          value={departmentName.value}
+          onChange={(e) => departmentName.setValue(e.target.value)} 
           required
         >
           {departments.map((dept) => (
