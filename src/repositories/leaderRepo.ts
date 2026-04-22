@@ -1,22 +1,20 @@
 import type { Leadership } from "../types/Leader";
-import { leadership } from "../data/leadership";
+import { apiJson } from "./apiClient";
 
-// this is the sole source of truth for leadership data
-// all reads and writes go through here
-let leaders: Leadership[] = leadership.map((l) => ({ ...l }));
+export interface LeaderResult {
+  success: boolean;
+  errors: string[];
+  leaders?: Leadership[];
+}
 
-// returns all leaders
-export const getLeaders = (): Leadership[] => {
-  return leaders.map((l) => ({ ...l }));
+export const getLeaders = (): Promise<Leadership[]> => {
+  return apiJson<Leadership[]>("/leaders");
 };
 
-// checks if a role is already occupied
-export const roleOccupied = (role: string): boolean => {
-  return leaders.some((l) => l.role.toLowerCase() === role.toLowerCase());
-};
-
-// creates a leader and returns the updated list
-export const createLeader = (leader: Leadership): Leadership[] => {
-  leaders = [...leaders, leader];
-  return getLeaders();
+export const createLeader = (leader: Leadership): Promise<LeaderResult> => {
+  return apiJson<LeaderResult>("/leaders", {
+    method: "POST",
+    body: JSON.stringify(leader),
+    acceptErrorResponse: true,
+  });
 };

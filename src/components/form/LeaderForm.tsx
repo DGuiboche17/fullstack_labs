@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from "react";
 import type { Leadership } from "../../types/Leader";
 import { useFormInput } from "../../hooks/useFormInput";
 import { addLeader } from "../../services/leaderService";
@@ -10,8 +11,9 @@ export const LeaderForm = ({ onLeaderAdded }: LeaderFormProps) => {
   const firstName = useFormInput("");
   const lastName = useFormInput("");
   const role = useFormInput("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     // validate each input using the hook's validate method; same as employee form
@@ -26,23 +28,29 @@ export const LeaderForm = ({ onLeaderAdded }: LeaderFormProps) => {
       return;
     }
 
-    // delegate creation to the service; it validates and calls the repo
-    const result = addLeader(firstName.value, lastName.value, role.value);
+    setIsSubmitting(true);
 
-    if (!result.success) {
-      // service returned errors; show them on the first name field as a safety net
-      firstName.setMessage(result.errors.join(", "));
-      return;
+    try {
+      // delegate creation to the service; the back-end validates and calls the repo
+      const result = await addLeader(firstName.value, lastName.value, role.value);
+
+      if (!result.success) {
+        firstName.setMessage(result.errors.join(", "));
+        return;
+      }
+
+      const audio = new Audio('/zelda.mp3'); // after validation, zelda shall play
+      audio.play();
+
+      onLeaderAdded(result.leaders ?? []);
+      firstName.reset("");
+      lastName.reset("");
+      role.reset("");
+    } catch {
+      firstName.setMessage("Unable to add leader through the API.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const audio = new Audio('/zelda.mp3'); // after validation, zelda shall play
-    audio.play();
-
-    // update the parent with the new leaders from the repo
-    onLeaderAdded(result.leaders!);
-    firstName.reset("");
-    lastName.reset("");
-    role.reset("");
   };
 
   return (
@@ -93,7 +101,9 @@ export const LeaderForm = ({ onLeaderAdded }: LeaderFormProps) => {
           required
         />
       </div>
-      <button type="submit">Add Leader/Role</button>
+      <button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Adding..." : "Add Leader/Role"}
+      </button>
     </form>
   );
 };

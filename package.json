@@ -4,10 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "vite",
+    "dev:backend": "npm run dev --prefix apps/backend",
     "build": "tsc -b && vite build",
+    "build:backend": "npm run build --prefix apps/backend",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start:backend": "npm start --prefix apps/backend"
   },
   "dependencies": {
     "react": "^19.2.0",
@@ -21,6 +25,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

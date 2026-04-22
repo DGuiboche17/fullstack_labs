@@ -1,3 +1,4 @@
+import { useEffect, useState, type FormEvent } from "react";
 import type { Department } from "../../types/Department";
 import { useFormInput } from "../../hooks/useFormInput";
 import { addEmployee } from "../../services/employeeService";
@@ -10,8 +11,15 @@ export const Form = ({ onEmployeeAdded, departments }: FormProps) => {
   const firstName = useFormInput("");
   const lastName = useFormInput("");
   const departmentName = useFormInput(departments[0]?.name || "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (!departmentName.value && departments[0]) {
+      departmentName.setValue(departments[0].name);
+    }
+  }, [departments, departmentName]);
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     // validate each input using the hook's validate method
@@ -26,23 +34,30 @@ export const Form = ({ onEmployeeAdded, departments }: FormProps) => {
       return;
     }
 
-    // delegate creation to the service; it validates and calls the repo
-    const result = addEmployee(firstName.value, lastName.value, departmentName.value);
+    setIsSubmitting(true);
 
-    if (!result.success) {
-      // service returned errors; show them on the first name field as a safety net
-      firstName.setMessage(result.errors.join(", "));
-      return;
+    try {
+      // delegate creation to the service; the back-end validates and calls the repo
+      const result = await addEmployee(firstName.value, lastName.value, departmentName.value);
+
+      if (!result.success) {
+        firstName.setMessage(result.errors.join(", "));
+        return;
+      }
+
+      const audio = new Audio('/zelda.mp3'); // I just wanted to see if this would work lol
+      audio.play();
+
+      const updatedDepartments = result.departments ?? departments;
+      onEmployeeAdded(updatedDepartments);
+      firstName.reset("");
+      lastName.reset("");
+      departmentName.reset(updatedDepartments[0]?.name || "");
+    } catch {
+      firstName.setMessage("Unable to add employee through the API.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const audio = new Audio('/zelda.mp3'); // I just wanted to see if this would work lol
-    audio.play();
-
-    // update the parent with the new departments from the repo
-    onEmployeeAdded(result.departments!);
-    firstName.reset("");
-    lastName.reset("");
-    departmentName.reset(departments[0]?.name || "");
   };
 
 
@@ -96,15 +111,21 @@ export const Form = ({ onEmployeeAdded, departments }: FormProps) => {
           onChange={(e) => departmentName.setValue(e.target.value)} 
           required
         >
-          {departments.map((dept) => (
-            <option key={dept.name} value={dept.name}>
-              {dept.name}
-            </option>   
-          ))}
+          {departments.length === 0 ? (
+            <option value="">No departments available</option>
+          ) : (
+            departments.map((dept) => (
+              <option key={dept.name} value={dept.name}>
+                {dept.name}
+              </option>   
+            ))
+          )}
         </select>
       </div>
 
-      <button type="submit">Add Employee</button>
+      <button type="submit" disabled={isSubmitting || departments.length === 0}>
+        {isSubmitting ? "Adding..." : "Add Employee"}
+      </button>
       
     </form>
   );
