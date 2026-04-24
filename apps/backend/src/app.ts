@@ -1,8 +1,8 @@
-import "./config/env";
+import "./config/env.js";
 import cors from "cors";
 import express from "express";
-import { departmentRouter } from "./routes/departmentRoutes";
-import { leaderRouter } from "./routes/leaderRoutes";
+import { departmentRouter } from "./routes/departmentRoutes.js";
+import { leaderRouter } from "./routes/leaderRoutes.js";
 
 const defaultAllowedOrigins = [
   "http://localhost:5173",
