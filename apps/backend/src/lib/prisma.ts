@@ -3,6 +3,7 @@ import { PrismaClient } from "../generated/prisma/client.js";
 
 let prisma: PrismaClient | undefined;
 
+
 export const getPrisma = (): PrismaClient => {
   const connectionString = process.env.DATABASE_URL;
 
