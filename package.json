@@ -7,11 +7,15 @@
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:frontend": "vite --config apps/frontend/vite.config.ts",
     "dev:backend": "npm run dev --prefix apps/backend",
-    "build": "tsc -b && vite build --config apps/frontend/vite.config.ts",
+
+    "build": "npm run build:backend && tsc -b && vite build --config apps/frontend/vite.config.ts",
+    "build:frontend": "tsc -b && vite build --config apps/frontend/vite.config.ts",
     "build:backend": "npm run build --prefix apps/backend",
+
     "db:migrate": "npm run migrate:dev --prefix apps/backend",
     "db:seed": "npm run db:seed --prefix apps/backend",
     "db:studio": "npm run studio --prefix apps/backend",
+
     "lint": "eslint .",
     "preview": "vite preview --config apps/frontend/vite.config.ts",
     "start:backend": "npm start --prefix apps/backend"
