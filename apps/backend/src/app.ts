@@ -62,4 +62,3 @@ app.use("/api/departments", departmentRouter);
 app.use("/api/leaders", leaderRouter);
 
 export default app;
-module.exports = app;
