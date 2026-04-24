@@ -2,7 +2,12 @@ interface ApiRequestOptions extends RequestInit {
   acceptErrorResponse?: boolean;
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3001/api";
+const configuredApiUrl = import.meta.env.VITE_API_BASE_URL ?? import.meta.env.VITE_API_URL;
+const API_BASE_URL = (configuredApiUrl ?? "http://localhost:3001/api").replace(/\/$/, "");
+
+if (import.meta.env.PROD && !configuredApiUrl) {
+  console.error("Missing VITE_API_BASE_URL. Production builds should not use the localhost API fallback.");
+}
 
 export const apiJson = async <T>(
   path: string,
