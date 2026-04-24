@@ -1,6 +1,6 @@
 
 import type { Department, Employee } from "../types/Department";
-import { prisma } from "../lib/prisma";
+import { getPrisma } from "../lib/prisma";
 
 interface DepartmentWithEmployees {
   name: string;
@@ -21,6 +21,7 @@ const mapDepartment = (department: DepartmentWithEmployees): Department => {
 };
 
 export const getDepartments = async (): Promise<Department[]> => {
+  const prisma = getPrisma();
   const departments = await prisma.department.findMany({
     orderBy: { id: "asc" },
     include: {
@@ -34,6 +35,7 @@ export const getDepartments = async (): Promise<Department[]> => {
 };
 
 export const departmentExists = async (departmentName: string): Promise<boolean> => {
+  const prisma = getPrisma();
   const department = await prisma.department.findFirst({
     where: {
       name: {
@@ -50,6 +52,7 @@ export const addEmployeeToDepartment = async (
   departmentName: string,
   employee: Employee
 ): Promise<Department[]> => {
+  const prisma = getPrisma();
   const department = await prisma.department.findFirstOrThrow({
     where: {
       name: {
