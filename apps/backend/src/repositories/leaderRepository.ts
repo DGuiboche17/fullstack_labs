@@ -1,17 +1,78 @@
-import { initialLeaders } from "../data/leaders";
 import type { Leadership } from "../types/Leader";
+import { prisma } from "../lib/prisma";
 
-let leaders: Leadership[] = initialLeaders.map((leader) => ({ ...leader }));
+interface LeaderWithRole {
+  firstName: string;
+  lastName: string;
+  role: {
+    title: string;
+  };
+}
 
-export const getLeaders = (): Leadership[] => {
-  return leaders.map((leader) => ({ ...leader }));
+const mapLeader = (leader: LeaderWithRole): Leadership => {
+  return {
+    firstName: leader.firstName,
+    lastName: leader.lastName,
+    role: leader.role.title,
+  };
 };
 
-export const roleOccupied = (role: string): boolean => {
-  return leaders.some((leader) => leader.role.toLowerCase() === role.toLowerCase());
+export const getLeaders = async (): Promise<Leadership[]> => {
+  const leaders = await prisma.leader.findMany({
+    orderBy: { id: "asc" },
+    include: { role: true },
+  });
+
+  return leaders.map(mapLeader);
 };
 
-export const addLeader = (leader: Leadership): Leadership[] => {
-  leaders = [...leaders, leader];
+export const roleOccupied = async (role: string): Promise<boolean> => {
+  const existingRole = await prisma.role.findFirst({
+    where: {
+      title: {
+        equals: role,
+        mode: "insensitive",
+      },
+    },
+    include: {
+      leader: true,
+    },
+  });
+
+  return existingRole !== null && existingRole.leader !== null;
+};
+
+export const addLeader = async (leader: Leadership): Promise<Leadership[]> => {
+  const existingRole = await prisma.role.findFirst({
+    where: {
+      title: {
+        equals: leader.role,
+        mode: "insensitive",
+      },
+    },
+  });
+
+  if (existingRole) {
+    await prisma.leader.create({
+      data: {
+        firstName: leader.firstName,
+        lastName: leader.lastName,
+        roleId: existingRole.id,
+      },
+    });
+  } else {
+    await prisma.role.create({
+      data: {
+        title: leader.role,
+        leader: {
+          create: {
+            firstName: leader.firstName,
+            lastName: leader.lastName,
+          },
+        },
+      },
+    });
+  }
+
   return getLeaders();
 };
