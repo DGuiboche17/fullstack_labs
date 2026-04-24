@@ -4,17 +4,38 @@ import express from "express";
 import { departmentRouter } from "./routes/departmentRoutes";
 import { leaderRouter } from "./routes/leaderRoutes";
 
-const allowedOrigins = (process.env.FRONTEND_ORIGINS ?? "http://localhost:5173,http://127.0.0.1:5173")
+const defaultAllowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "https://fullstack-labs.vercel.app",
+];
+
+const allowedOrigins = [
+  ...defaultAllowedOrigins,
+  ...(process.env.FRONTEND_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())
-  .filter(Boolean);
+  .filter(Boolean),
+];
+
+const allowedPreviewOriginPatterns = [
+  /^https:\/\/fullstack-labs-[a-z0-9-]+\.vercel\.app$/,
+  /^https:\/\/fullstack-labs-[a-z0-9-]+-dguiboche17s-projects\.vercel\.app$/,
+];
+
+const isAllowedOrigin = (origin: string) => {
+  return (
+    allowedOrigins.includes(origin) ||
+    allowedPreviewOriginPatterns.some((pattern) => pattern.test(origin))
+  );
+};
 
 const app = express();
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
