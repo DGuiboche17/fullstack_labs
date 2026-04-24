@@ -1,5 +1,5 @@
 import type { Leadership } from "../types/Leader";
-import { prisma } from "../lib/prisma";
+import { getPrisma } from "../lib/prisma";
 
 interface LeaderWithRole {
   firstName: string;
@@ -18,6 +18,7 @@ const mapLeader = (leader: LeaderWithRole): Leadership => {
 };
 
 export const getLeaders = async (): Promise<Leadership[]> => {
+  const prisma = getPrisma();
   const leaders = await prisma.leader.findMany({
     orderBy: { id: "asc" },
     include: { role: true },
@@ -27,6 +28,7 @@ export const getLeaders = async (): Promise<Leadership[]> => {
 };
 
 export const roleOccupied = async (role: string): Promise<boolean> => {
+  const prisma = getPrisma();
   const existingRole = await prisma.role.findFirst({
     where: {
       title: {
@@ -43,6 +45,7 @@ export const roleOccupied = async (role: string): Promise<boolean> => {
 };
 
 export const addLeader = async (leader: Leadership): Promise<Leadership[]> => {
+  const prisma = getPrisma();
   const existingRole = await prisma.role.findFirst({
     where: {
       title: {

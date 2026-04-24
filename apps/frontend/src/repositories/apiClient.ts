@@ -15,7 +15,7 @@ export const apiJson = async <T>(
 ): Promise<T> => {
   const requestHeaders = new Headers(headers);
 
-  if (!requestHeaders.has("Content-Type")) {
+  if (options.body && !requestHeaders.has("Content-Type")) {
     requestHeaders.set("Content-Type", "application/json");
   }
 
