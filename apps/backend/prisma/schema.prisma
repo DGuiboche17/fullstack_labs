@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Department {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  employees Employee[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Employee {
+  id           Int        @id @default(autoincrement())
+  firstName    String
+  lastName     String?
+  departmentId Int
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([departmentId])
+}
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  title     String   @unique
+  leader    Leader?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Leader {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  roleId    Int      @unique
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

@@ -1,3 +1,4 @@
+import "./config/env";
 import cors from "cors";
 import express from "express";
 import { departmentRouter } from "./routes/departmentRoutes";
@@ -8,7 +9,7 @@ const allowedOrigins = (process.env.FRONTEND_ORIGINS ?? "http://localhost:5173,h
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-export const app = express();
+const app = express();
 
 app.use(
   cors({
@@ -25,5 +26,19 @@ app.use(
 
 app.use(express.json());
 
+app.get("/", (_request, response) => {
+  response.json({
+    message: "Pixell River API is running",
+    endpoints: ["/api/health", "/api/departments", "/api/leaders"],
+  });
+});
+
+app.get("/api/health", (_request, response) => {
+  response.json({ status: "ok" });
+});
+
 app.use("/api/departments", departmentRouter);
 app.use("/api/leaders", leaderRouter);
+
+export default app;
+module.exports = app;

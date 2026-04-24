@@ -19,12 +19,13 @@ interface LeaderServiceResult {
 
 const isText = (value: unknown): value is string => typeof value === "string";
 
-export const getLeaders = (): Leadership[] => {
+export const getLeaders = (): Promise<Leadership[]> => {
   return getLeadersFromRepository();
 };
 
-export const addLeader = (request: AddLeaderRequest): LeaderServiceResult => {
+export const addLeader = async (request: AddLeaderRequest): Promise<LeaderServiceResult> => {
   const errors: string[] = [];
+  const role = isText(request.role) ? request.role.trim() : "";
 
   if (!isText(request.firstName) || request.firstName.trim().length < 3) {
     errors.push("First name must be at least 3 characters");
@@ -34,9 +35,9 @@ export const addLeader = (request: AddLeaderRequest): LeaderServiceResult => {
     errors.push("Last name must be text");
   }
 
-  if (!isText(request.role) || request.role.trim().length === 0) {
+  if (role.length === 0) {
     errors.push("Please enter a role");
-  } else if (roleOccupied(request.role)) {
+  } else if (await roleOccupied(role)) {
     errors.push("Role is already occupied");
   }
 
@@ -44,10 +45,10 @@ export const addLeader = (request: AddLeaderRequest): LeaderServiceResult => {
     return { success: false, errors };
   }
 
-  const leaders = addLeaderToRepository({
+  const leaders = await addLeaderToRepository({
     firstName: (request.firstName as string).trim(),
     lastName: isText(request.lastName) ? request.lastName.trim() : "",
-    role: (request.role as string).trim(),
+    role,
   });
 
   return { success: true, errors: [], leaders };

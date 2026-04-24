@@ -1,4 +1,5 @@
-import { app } from "./app";
+import "./config/env";
+import app from "./app";
 
 const PORT = Number(process.env.PORT ?? 3001);
 

@@ -19,12 +19,13 @@ interface EmployeeServiceResult {
 
 const isText = (value: unknown): value is string => typeof value === "string";
 
-export const getDepartments = (): Department[] => {
+export const getDepartments = (): Promise<Department[]> => {
   return getDepartmentsFromRepository();
 };
 
-export const addEmployee = (request: AddEmployeeRequest): EmployeeServiceResult => {
+export const addEmployee = async (request: AddEmployeeRequest): Promise<EmployeeServiceResult> => {
   const errors: string[] = [];
+  const departmentName = isText(request.departmentName) ? request.departmentName.trim() : "";
 
   if (!isText(request.firstName) || request.firstName.trim().length < 3) {
     errors.push("First name must be at least 3 characters");
@@ -34,9 +35,9 @@ export const addEmployee = (request: AddEmployeeRequest): EmployeeServiceResult 
     errors.push("Last name must be text");
   }
 
-  if (!isText(request.departmentName) || request.departmentName.trim().length === 0) {
+  if (departmentName.length === 0) {
     errors.push("Please select a department");
-  } else if (!departmentExists(request.departmentName)) {
+  } else if (!(await departmentExists(departmentName))) {
     errors.push("Selected department does not exist");
   }
 
@@ -44,7 +45,7 @@ export const addEmployee = (request: AddEmployeeRequest): EmployeeServiceResult 
     return { success: false, errors };
   }
 
-  const departments = addEmployeeToDepartment(request.departmentName as string, {
+  const departments = await addEmployeeToDepartment(departmentName, {
     firstName: (request.firstName as string).trim(),
     lastName: isText(request.lastName) ? request.lastName.trim() : undefined,
   });
