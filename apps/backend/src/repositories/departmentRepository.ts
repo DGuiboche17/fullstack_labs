@@ -1,3 +1,4 @@
+
 import type { Department, Employee } from "../types/Department";
 import { prisma } from "../lib/prisma";
 
